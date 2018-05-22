@@ -23,17 +23,36 @@ class NodeVisitor
   end
 
   def process_sequence node
-    node.nodes.each{|n|
+    nodes = node.nodes.dup
+    last_node = nodes.pop
+
+    nodes.each{|n|
       visit(n)
+      @yasm.pop
     }
+
+    if last_node
+      visit last_node
+    else
+      @yasm.putnil
+    end
   end
 
   def process_send node
-    raise "not implemented yet: #{node}"
+    visit(node.receiver_node)
+    node.argument_nodes.each do |argument_node|
+      visit(argument_node)
+    end
+
+    if node.type == :fcall
+      @yasm.send node.method_id, node.argument_nodes.size, YASM::FCALL
+    else
+      @yasm.send node.method_id, node.argument_nodes.size
+    end
   end
 
   def process_self node
-    raise "not implemented yet: #{node}"
+    @yasm.putself
   end
 
   def process_literal node
@@ -42,35 +61,64 @@ class NodeVisitor
   end
 
   def process_stringliteral node
-    raise "not implemented yet: #{node}"
+    obj = node.obj
+    @yasm.putobject obj
   end
 
   def process_nil node
-    raise "not implemented yet: #{node}"
+    @yasm.putnil
   end
 
   def process_if node
-    raise "not implemented yet: #{node}"
+    visit(node.cond_node)
+
+    else_label = gen_label
+    finish_label = gen_label
+
+    @yasm.branchunless else_label
+    visit(node.body_node)
+    @yasm.jump finish_label
+
+    @yasm.label else_label
+    visit(node.else_node)
+
+    @yasm.label finish_label
   end
 
   def process_while node
-    raise "not implemented yet: #{node}"
+    while_start = gen_label
+    while_end = gen_label
+
+    @yasm.label while_start
+    visit(node.cond_node)
+
+    @yasm.branchunless while_end
+    visit(node.body_node)
+    @yasm.pop
+    @yasm.jump while_start
+
+    @yasm.label while_end
+    @yasm.putnil
   end
 
   def process_def node
     method_iseq = ast2iseq(node)
 
-    # call "core#define_method" explicitly
-    # see define_method_macro at yasm.rb.
-    raise "not implemented yet: #{node}"
+    # SpecialObject.core#define_method
+    @yasm.putspecialobject 1
+    @yasm.putobject node.name
+    @yasm.putiseq method_iseq.to_a
+    @yasm.send :"core#define_method", 2
   end
 
   def process_lvarassign node
-    raise "not implemented yet: #{node}"
+    value = visit(node.value_node)
+    @yasm.dup
+    @yasm.setlocal node.lvar_id
   end
 
   def process_lvar node
-    raise "not implemented yet: #{node}"
+    @yasm.getlocal node.lvar_id
   end
 end
 

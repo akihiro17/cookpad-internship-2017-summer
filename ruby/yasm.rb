@@ -61,8 +61,8 @@ class YASM
 
   FCALL = 4
   VCALL = 8
-  def send mid, argc, flag = 0
-    add :send, {mid: mid, orig_argc: argc, flag: flag}, false, nil
+  def send mid, argc, flag = 0, blockiseq = nil
+    add :send, {mid: mid, orig_argc: argc, flag: flag}, false, blockiseq
   end
 
   def getlocal lid, level = 0
