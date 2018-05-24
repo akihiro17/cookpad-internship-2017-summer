@@ -176,6 +176,18 @@ module Ruby2AST
         LiteralNode.new data.first[1][1].to_sym
       when :string_literal
         StringLiteralNode.new data.first[1][1]
+      when :method_add_block
+        p "receiver: #{data.first[1]}"
+        receiver = data.first[1]
+        # only identifier
+        p "method: #{data.first[3][0]}, #{data.first[3][1]}"
+        method_name = data.first[3][1]
+
+        p "block arg #{data[1][1]}"
+        block_arg = data[1][1]
+        block_node = BlockNode.new block_arg, seq(data[1][2])
+        call_node = CallNode.new receiver, method_name
+        MethodAddBlockNode.new call_node, block_node
       else
         raise "unsuppoted: #{node.inspect}"
       end
@@ -186,15 +198,11 @@ end
 if $0 == __FILE__
   script = <<-EOS
 
-   def fib(n)
-     if n < 2
-       1
-     else
-       fib(n-2) + fib(n-1)
-     end
-   end
-   fib(10)
-
+i = 0
+2.times do
+  i = i + 1
+end
+i
 __END__
   EOS
   ast = Ruby2AST.to_ast(script)

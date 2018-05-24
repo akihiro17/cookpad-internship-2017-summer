@@ -114,20 +114,38 @@ class NodeVisitor
   def process_lvarassign node
     value = visit(node.value_node)
     @yasm.dup
-    @yasm.setlocal node.lvar_id
+    lv = 0
+    while (scope && !scope.lookup_local(node.lvar_id))
+      lv += 1
+      scope = @yasm.parent
+    end
+    @yasm.setlocal node.lvar_id, lv
   end
 
   def process_lvar node
-    @yasm.getlocal node.lvar_id
+    scope = @yasm
+    lv = 0
+    while (scope && !scope.lookup_local(node.lvar_id))
+      lv += 1
+      scope = @yasm.parent
+    end
+    p "lv: #{lv}"
+    @yasm.getlocal node.lvar_id, lv
+  end
+
+  def process_methodaddblock node
+    pp node.block_node.nodes
+    blockiseq = ast2iseq(node.block_node.nodes, @yasm)
+    raise "unsup"
   end
 end
 
-def ast2iseq node
+def ast2iseq node, parent = nil
   if DefNode === node
-    yasm = YASM.new label: node.name.to_s, type: :method, parameters: node.parameters
+    yasm = YASM.new label: node.name.to_s, type: :method, parameters: node.parameters, parent: parent
     node = node.body
   else
-    yasm = YASM.new
+    yasm = YASM.new parent: parent
   end
   visitor = NodeVisitor.new(yasm)
   visitor.visit node

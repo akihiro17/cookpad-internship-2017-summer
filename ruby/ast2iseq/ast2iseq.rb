@@ -25,9 +25,13 @@ end unless defined?(ast2iseq)
 if $0 == __FILE__
   script = <<-EOS
   # fill your script here
-  
-  1
-  
+
+i = 0
+2.times do
+  i += 1
+end
+i
+
   #######################
   EOS
   ast = Ruby2AST.to_ast(script)

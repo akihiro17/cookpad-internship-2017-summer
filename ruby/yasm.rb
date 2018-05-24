@@ -18,13 +18,14 @@ end unless RubyVM::InstructionSequence.respond_to? :load
 
 class YASM
 
-  attr_reader :seq
+  attr_reader :seq, :parent
 
   def initialize type: :top,
                  label: nil,
                  path: nil,
                  first_line: 1,
-                 parameters: []
+                 parameters: [],
+                 parent: nil
     @type = type
     @parameters = parameters
     @local_variables = {}
@@ -34,6 +35,7 @@ class YASM
     @seq = [first_line]
     @label = label || "<compiled/yasm(#{type})>"
     @path = path || "<compiled/yasm>"
+    @parent = parent
   end
 
   def label label
@@ -73,6 +75,10 @@ class YASM
   def setlocal lid, level = 0
     register_lvar lid
     add :setlocal, lid, level
+  end
+
+  def lookup_local lvar
+    @local_variables[lvar]
   end
 
   def define_method_macro mid, *args, **kw, &b

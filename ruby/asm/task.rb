@@ -398,17 +398,26 @@ end
 
 assert iseq, 89
 
-iseq = YASM.asm label: "A-7: def:foo()" do
+# i = 0
+# 2.times do
+#   i += 1
+# end
+# i
+iseq = YASM.asm label: "block" do
   blockiseq = YASM.asm label: "block", type: :block do
-    putself
-    putstring "a"
-    send :p, 1, YASM::FCALL
+    getlocal :i, 1
+    putobject 1
+    send :+, 1
+    setlocal :i, 1
+    dup
     leave
   end
 
+  putobject 0
+  setlocal :i, 0
   putobject 2
   send :times, 0, 0, blockiseq
   leave
 end
 
-assert iseq, 'a'
+assert iseq, 2

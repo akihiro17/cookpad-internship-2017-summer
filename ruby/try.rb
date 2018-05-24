@@ -3,7 +3,11 @@ require_relative 'yasm'
 script = <<END_OF_SCRIPT
 # insert your favorite Ruby program here.
 
-1 + 2
+i = 0
+2.times do
+  i = i + 1
+end
+i
 
 END_OF_SCRIPT
 

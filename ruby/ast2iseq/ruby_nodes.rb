@@ -101,3 +101,27 @@ class DefNode
     @body = body
   end
 end
+
+class CallNode
+  attr_reader :receiver, :method_name
+  def initialize receiver, method_name
+    @receiver = receiver
+    @method_name = method_name
+  end
+end
+
+class BlockNode
+  attr_reader :arg, :nodes
+  def initialize arg, nodes
+    @arg = arg
+    @nodes = nodes
+  end
+end
+
+class MethodAddBlockNode
+  attr_reader :call_node, :block_node
+  def initialize call_node, block_node
+    @call_node = call_node
+    @block_node = block_node
+  end
+end

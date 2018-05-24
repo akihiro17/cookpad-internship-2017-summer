@@ -64,6 +64,13 @@ require_relative './ast2iseq'
    end
    fib(10)
   }, 89],
+ [%q{
+   i = 0
+   2.times do
+     i += 1
+   end
+   i
+  }, 2],
 ].each do |script, expected|
   begin
     # puts script; STDOUT.flush
